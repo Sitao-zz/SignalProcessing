@@ -1,4 +1,4 @@
-import evaluator as eva
+import src.evaluator as eva
 
 from deap import tools
 

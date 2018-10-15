@@ -1,5 +1,5 @@
-import fuzzy
-import generator
+import src.fuzzy as fuzzy
+import src.generator as generator
 
 eva_data = None
 
