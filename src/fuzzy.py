@@ -50,6 +50,18 @@ class DecisionMaker:
 
         :param data:
         :return:
+                                            degree
+        date
+        2014-05-01 18:47:05.069722            NaN
+        2014-05-01 18:47:05.119994            0.2
+        2014-05-02 18:47:05.178768            0.1
+        2014-05-02 18:47:05.230071           -0.3
+        2014-05-02 18:47:05.230071            0.4
+        2014-05-02 18:47:05.280592           -0.2
+        2014-05-03 18:47:05.332662            0.4
+        2014-05-03 18:47:05.385109           -0.6
+        2014-05-04 18:47:05.436523           -0.8
+        2014-05-04 18:47:05.486877            0.9
         """
 
         self.decisionEval.input[self.dataheaders[1]] = data[self.dataheaders[1]]
@@ -58,8 +70,8 @@ class DecisionMaker:
         self.decisionEval.compute()
         decision = (self.decisionEval.output['decision'] - 5) / 10
 
-        consequents = [[]]
-        consequents[0] = [decision]
+        consequences = [[]]
+        consequences[0] = [decision]
 
         # return decision
-        return consequents
+        return consequences

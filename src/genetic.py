@@ -3,7 +3,7 @@ import evaluator as eva
 from deap import tools
 
 
-class GeneticEngin:
+class GeneticEngine:
     def __init__(self, data):
         self._evaluator = eva.Evaluator(data)
 
