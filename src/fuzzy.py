@@ -15,32 +15,9 @@ class DecisionMaker:
         Constructor, set up control system for decision
         :param rule_set: the rule_set used to create the
         """
-
-        if not self.checkData(data):
-            return
-
+        self.dataheaders = data.columns
         self.decisionCS = ctrl.ControlSystem(rule_set)
         self.decisionEval = ctrl.ControlSystemSimulation(self.decisionCS)
-
-    def checkData(self, data):
-        """
-        This method verifies the correctness of the data:
-        (1) checks correct number of variables
-        (2) checks at least one row of data exists
-
-        :param data:
-        :return:
-        """
-        if len(data.columns) < NUM_VARIABLES:
-            print("Insufficient fuzzy variables")
-            return False
-
-        if len(data) == 0:
-            print("No data found")
-            return False
-
-        self.dataheaders = data.columns
-        return True
 
     def defuzzify(self, data):
         """
@@ -70,8 +47,11 @@ class DecisionMaker:
         self.decisionEval.compute()
         decision = (self.decisionEval.output['decision'] - 5) / 10
 
-        consequences = [[]]
-        consequences[0] = [decision]
+        consequents = [[]]
+        consequents[0] = [data[self.dataheaders[3]], decision]
+
+        # consequents[0][0]  is DateTime Index  20110103-10:38:00
+        # consequents[0][1]  is decision  e.g. 0.2  , -0.3
 
         # return decision
-        return consequences
+        return consequents

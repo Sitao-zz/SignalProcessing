@@ -10,11 +10,14 @@ class Generator:
         self.ADX = None
         self.RSI = None
         self.MACD = None
+        self.Indicator4=None
+        self.Indicator5 = None
         self.decision = None
+        self.indicatorOrder =[9,10,11,12,13]
+        self.indicators = {9: self.RSI, 10 :self.MACD , 11 : self.ADX, 12 : self.Indicator4, 13 :self.Indicator5}
         self.items = {}
         self.fuzzify(data)
-        self.init_rules()
-
+        self.init_rules(data)
 
     def fuzzify(self, data):
         """
@@ -25,73 +28,68 @@ class Generator:
         :param data:
         :return:
         """
-
         # set up RSI
         x = np.arange(0, 101, 1)
-        self.RSI = ctrl.Antecedent(x, data.columns[1])
-
+        self.RSI = ctrl.Antecedent(x, data.columns[9])
         self.RSI['lo'] = fuzz.trimf(x, [0, 0, 30])
         self.RSI['me'] = fuzz.trimf(x, [20, 50, 90])
         self.RSI['hi'] = fuzz.trimf(x, [80, 100, 100])
 
         # set up MACD
-        x = np.arange(0, 201, 1)
-        self.MACD = ctrl.Antecedent(x, data.columns[2])
-        self.MACD['lo'] = fuzz.trapmf(self.MACD.universe, [0, 0, 20, 30])
-        self.MACD['me'] = fuzz.trapmf(self.MACD.universe, [30, 50, 80, 100])
-        self.MACD['hi'] = fuzz.trapmf(self.MACD.universe, [80, 100, 200, 200])
+        x = np.arange(0, 101, 1)
+        self.MACD = ctrl.Antecedent(x, data.columns[10])
+        self.MACD['lo'] = fuzz.trimf(x, [0, 0, 30])
+        self.MACD['me'] = fuzz.trimf(x, [20, 50, 90])
+        self.MACD['hi'] = fuzz.trimf(x, [80, 100, 100])
 
-        # self.MACD['lo'] = fuzz.trimf(x, [0, 0, 30])
-        # self.MACD['me'] = fuzz.trimf(x, [20, 50, 90])
-        # self.MACD['hi'] = fuzz.trimf(x, [80, 100, 100])
+        # set up other Indicators membership functions
+        # ADX
+        x = np.arange(0, 101, 1)
+        self.ADX = ctrl.Antecedent(x, data.columns[11])
+        self.ADX['lo'] = fuzz.trimf(x, [0, 0, 30])
+        self.ADX['me'] = fuzz.trimf(x, [20, 50, 90])
+        self.ADX['hi'] = fuzz.trimf(x, [80, 100, 100])
 
-        # set up ADX
-        x = np.arange(20, 101, 1)
-        self.ADX = ctrl.Antecedent(x, data.columns[3])
-        self.ADX['lo'] = fuzz.trapmf(self.ADX.universe, [20, 20, 30, 40])
-        self.ADX['me'] = fuzz.trapmf(self.ADX.universe, [30, 40, 50, 60])
-        self.ADX['hi'] = fuzz.trapmf(self.ADX.universe, [50, 60, 100, 100])
+        x = np.arange(0, 101, 1)
+        self.Indicator4 = ctrl.Antecedent(x, data.columns[12])
+        self.Indicator4['lo'] = fuzz.trimf(x, [0, 0, 30])
+        self.Indicator4['me'] = fuzz.trimf(x, [20, 50, 90])
+        self.Indicator4['hi'] = fuzz.trimf(x, [80, 100, 100])
 
-        # set up decision
-        x = np.arange(0, 11, 1)
-        self.decision = ctrl.Consequent(x, 'decision')
-        self.decision['buy'] = fuzz.trapmf(self.decision.universe, [0, 0, 3, 4])
-        self.decision['hold'] = fuzz.trapmf(self.decision.universe, [3, 4, 6, 7])
-        self.decision['sell'] = fuzz.trapmf(self.decision.universe, [6, 7, 10, 10])
+        x = np.arange(0, 101, 1)
+        self.Indicator5 = ctrl.Antecedent(x, data.columns[13])
+        self.Indicator5['lo'] = fuzz.trimf(x, [0, 0, 30])
+        self.Indicator5['me'] = fuzz.trimf(x, [20, 50, 90])
+        self.Indicator5['hi'] = fuzz.trimf(x, [80, 100, 100])
 
-        if DEBUGLEVEL == 1:
-            self.RSI.view()
-            self.MACD.view()
-            self.ADX.view()
-            self.decision.view()
         return
 
-    def init_rules(self):
+    def init_rules(self,data):
         """
         This method:
         (1) sets the rule base
         (2) sets the inference engine to use the rule base
         :return: void
         """
-
         # TODO: dynamically generating the rules and add them into the item dictionary
-
-        # rules 01 - 27
-        # RSI & MACD & ADX -> decision (buy, hold, sell)
-        rule01 = ctrl.Rule(self.MACD['hi'], self.decision['sell'])
-        rule02 = ctrl.Rule(self.MACD['me'], self.decision['sell'])
-        rule03 = ctrl.Rule(self.MACD['lo'], self.decision['sell'])
-        rule04 = ctrl.Rule(self.MACD['hi'], self.decision['hold'])
-        rule05 = ctrl.Rule(self.MACD['me'], self.decision['hold'])
-        rule06 = ctrl.Rule(self.MACD['lo'], self.decision['hold'])
-        rule07 = ctrl.Rule(self.MACD['hi'], self.decision['buy'])
-        rule08 = ctrl.Rule(self.MACD['me'], self.decision['buy'])
-        rule09 = ctrl.Rule(self.MACD['lo'], self.decision['buy'])
-
         # store the rules into the dictionary
-        self.items[0] = rule01
 
-        return
+        counter = 0
+        for key, value in self.indicators.items():
+            if key in self.indicatorOrder:
+                self.items[counter].append(ctrl.Rule(value['hi'], self.decision['sell']))
+                self.items[counter + 1].append(ctrl.Rule(value['me'], self.decision['sell']))
+                self.items[counter + 2].append(ctrl.Rule(value['lo'], self.decision['sell']))
+                self.items[counter + 3].append(ctrl.Rule(value['hi'], self.decision['hold']))
+                self.items[counter + 4].append(ctrl.Rule(value['me'], self.decision['hold']))
+                self.items[counter + 5].append(ctrl.Rule(value['lo'], self.decision['hold']))
+                self.items[counter + 6].append(ctrl.Rule(value['hi'], self.decision['buy']))
+                self.items[counter + 7].append(ctrl.Rule(value['me'], self.decision['buy']))
+                self.items[counter + 8].append(ctrl.Rule(value['lo'], self.decision['buy']))
+                counter = counter + 9
+            else:
+                print(key,value)
+
 
     def create_rule_set(self, ind):
         """
@@ -100,4 +98,4 @@ class Generator:
         :param ind: the individual containing the indexes for the selected rule
         :return: the list of control rules
         """
-        return [self.items[0], self.items[1]]
+        return self.items
