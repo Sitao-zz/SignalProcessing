@@ -4,7 +4,7 @@
 #       Flow of the training process        #
 #                                           #
 #############################################
-import genetic
+import src.genetic as genetic
 
 
 # Get the best individual and its fitness value
