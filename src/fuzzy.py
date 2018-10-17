@@ -41,11 +41,13 @@ class DecisionMaker:
         2014-05-04 18:47:05.486877            0.9
         """
 
-        self.decisionEval.input[self.dataheaders[1]] = data[self.dataheaders[1]]
-        self.decisionEval.input[self.dataheaders[2]] = data[self.dataheaders[2]]
-        self.decisionEval.input[self.dataheaders[3]] = data[self.dataheaders[3]]
+        self.decisionEval.input[self.dataheaders[9]] = data[self.dataheaders[9]]
+        self.decisionEval.input[self.dataheaders[10]] = data[self.dataheaders[10]]
+        self.decisionEval.input[self.dataheaders[11]] = data[self.dataheaders[11]]
+        self.decisionEval.input[self.dataheaders[12]] = data[self.dataheaders[12]]
+        self.decisionEval.input[self.dataheaders[13]] = data[self.dataheaders[13]]
         self.decisionEval.compute()
-        decision = (self.decisionEval.output['decision'] - 5) / 10
+        decision = round((self.decisionEval.output['decision'] - 5) / 10,2)
 
         consequents = [[]]
         consequents[0] = [data[self.dataheaders[3]], decision]

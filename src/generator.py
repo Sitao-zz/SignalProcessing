@@ -7,16 +7,10 @@ DEBUGLEVEL = 0
 
 class Generator:
     def __init__(self, data):
-        self.ADX = None
-        self.RSI = None
-        self.MACD = None
-        self.Indicator4=None
-        self.Indicator5 = None
-        self.decision = None
-        self.indicatorOrder =[9,10,11,12,13]
-        self.indicators = {9: self.RSI, 10 :self.MACD , 11 : self.ADX, 12 : self.Indicator4, 13 :self.Indicator5}
-        self.items = {}
         self.fuzzify(data)
+        self.indicatorOrder =[9,10,11,12,13]
+        #self.indicators = {9: self.RSI, 10 :self.MACD , 11 : self.ADX, 12 : self.Indicator4, 13 :self.Indicator5}
+        self.items = []
         self.init_rules(data)
 
     def fuzzify(self, data):
@@ -62,8 +56,14 @@ class Generator:
         self.Indicator5['me'] = fuzz.trimf(x, [20, 50, 90])
         self.Indicator5['hi'] = fuzz.trimf(x, [80, 100, 100])
 
-        return
+        # set up decision
+        x = np.arange(0, 11, 1)
+        self.decision = ctrl.Consequent(x, 'decision')
+        self.decision['buy'] = fuzz.trapmf(self.decision.universe, [0, 0, 3, 4])
+        self.decision['hold'] = fuzz.trapmf(self.decision.universe, [3, 4, 6, 7])
+        self.decision['sell'] = fuzz.trapmf(self.decision.universe, [6, 7, 10, 10])
 
+        return
     def init_rules(self,data):
         """
         This method:
@@ -75,20 +75,104 @@ class Generator:
         # store the rules into the dictionary
 
         counter = 0
-        for key, value in self.indicators.items():
-            if key in self.indicatorOrder:
-                self.items[counter].append(ctrl.Rule(value['hi'], self.decision['sell']))
-                self.items[counter + 1].append(ctrl.Rule(value['me'], self.decision['sell']))
-                self.items[counter + 2].append(ctrl.Rule(value['lo'], self.decision['sell']))
-                self.items[counter + 3].append(ctrl.Rule(value['hi'], self.decision['hold']))
-                self.items[counter + 4].append(ctrl.Rule(value['me'], self.decision['hold']))
-                self.items[counter + 5].append(ctrl.Rule(value['lo'], self.decision['hold']))
-                self.items[counter + 6].append(ctrl.Rule(value['hi'], self.decision['buy']))
-                self.items[counter + 7].append(ctrl.Rule(value['me'], self.decision['buy']))
-                self.items[counter + 8].append(ctrl.Rule(value['lo'], self.decision['buy']))
-                counter = counter + 9
+        for key in self.indicatorOrder:
+            if key == 9 :
+                rule1=ctrl.Rule(self.RSI['hi'], self.decision['sell'])
+                rule2=ctrl.Rule(self.RSI['me'], self.decision['sell'])
+                rule3 = ctrl.Rule(self.RSI['lo'], self.decision['sell'])
+                rule4 = ctrl.Rule(self.RSI['hi'], self.decision['hold'])
+                rule5 = ctrl.Rule(self.RSI['me'], self.decision['hold'])
+                rule6 = ctrl.Rule(self.RSI['lo'], self.decision['hold'])
+                rule7 = ctrl.Rule(self.RSI['hi'], self.decision['buy'])
+                rule8 = ctrl.Rule(self.RSI['me'], self.decision['buy'])
+                rule9 = ctrl.Rule(self.RSI['lo'], self.decision['buy'])
+                self.items.append(rule1)
+                self.items.append(rule2)
+                self.items.append(rule3)
+                self.items.append(rule4)
+                self.items.append(rule5)
+                self.items.append(rule6)
+                self.items.append(rule7)
+                self.items.append(rule8)
+                self.items.append(rule9)
+            elif key == 10:
+                rule1 = ctrl.Rule(self.MACD['hi'], self.decision['sell'])
+                rule2 = ctrl.Rule(self.MACD['me'], self.decision['sell'])
+                rule3 = ctrl.Rule(self.MACD['lo'], self.decision['sell'])
+                rule4 = ctrl.Rule(self.MACD['hi'], self.decision['hold'])
+                rule5 = ctrl.Rule(self.MACD['me'], self.decision['hold'])
+                rule6 = ctrl.Rule(self.MACD['lo'], self.decision['hold'])
+                rule7 = ctrl.Rule(self.MACD['hi'], self.decision['buy'])
+                rule8 = ctrl.Rule(self.MACD['me'], self.decision['buy'])
+                rule9 = ctrl.Rule(self.MACD['lo'], self.decision['buy'])
+                self.items.append(rule1)
+                self.items.append(rule2)
+                self.items.append(rule3)
+                self.items.append(rule4)
+                self.items.append(rule5)
+                self.items.append(rule6)
+                self.items.append(rule7)
+                self.items.append(rule8)
+                self.items.append(rule9)
+            elif key == 11:
+                rule1 = ctrl.Rule(self.ADX['hi'], self.decision['sell'])
+                rule2 = ctrl.Rule(self.ADX['me'], self.decision['sell'])
+                rule3 = ctrl.Rule(self.ADX['lo'], self.decision['sell'])
+                rule4 = ctrl.Rule(self.ADX['hi'], self.decision['hold'])
+                rule5 = ctrl.Rule(self.ADX['me'], self.decision['hold'])
+                rule6 = ctrl.Rule(self.ADX['lo'], self.decision['hold'])
+                rule7 = ctrl.Rule(self.ADX['hi'], self.decision['buy'])
+                rule8 = ctrl.Rule(self.ADX['me'], self.decision['buy'])
+                rule9 = ctrl.Rule(self.ADX['lo'], self.decision['buy'])
+                self.items.append(rule1)
+                self.items.append(rule2)
+                self.items.append(rule3)
+                self.items.append(rule4)
+                self.items.append(rule5)
+                self.items.append(rule6)
+                self.items.append(rule7)
+                self.items.append(rule8)
+                self.items.append(rule9)
+            elif key == 12:
+                rule1 = ctrl.Rule(self.Indicator4['hi'], self.decision['sell'])
+                rule2 = ctrl.Rule(self.Indicator4['me'], self.decision['sell'])
+                rule3 = ctrl.Rule(self.Indicator4['lo'], self.decision['sell'])
+                rule4 = ctrl.Rule(self.Indicator4['hi'], self.decision['hold'])
+                rule5 = ctrl.Rule(self.Indicator4['me'], self.decision['hold'])
+                rule6 = ctrl.Rule(self.Indicator4['lo'], self.decision['hold'])
+                rule7 = ctrl.Rule(self.Indicator4['hi'], self.decision['buy'])
+                rule8 = ctrl.Rule(self.Indicator4['me'], self.decision['buy'])
+                rule9 = ctrl.Rule(self.Indicator4['lo'], self.decision['buy'])
+                self.items.append(rule1)
+                self.items.append(rule2)
+                self.items.append(rule3)
+                self.items.append(rule4)
+                self.items.append(rule5)
+                self.items.append(rule6)
+                self.items.append(rule7)
+                self.items.append(rule8)
+                self.items.append(rule9)
+            elif key == 13:
+                rule1 = ctrl.Rule(self.Indicator5['hi'], self.decision['sell'])
+                rule2 = ctrl.Rule(self.Indicator5['me'], self.decision['sell'])
+                rule3 = ctrl.Rule(self.Indicator5['lo'], self.decision['sell'])
+                rule4 = ctrl.Rule(self.Indicator5['hi'], self.decision['hold'])
+                rule5 = ctrl.Rule(self.Indicator5['me'], self.decision['hold'])
+                rule6 = ctrl.Rule(self.Indicator5['lo'], self.decision['hold'])
+                rule7 = ctrl.Rule(self.Indicator5['hi'], self.decision['buy'])
+                rule8 = ctrl.Rule(self.Indicator5['me'], self.decision['buy'])
+                rule9 = ctrl.Rule(self.Indicator5['lo'], self.decision['buy'])
+                self.items.append(rule1)
+                self.items.append(rule2)
+                self.items.append(rule3)
+                self.items.append(rule4)
+                self.items.append(rule5)
+                self.items.append(rule6)
+                self.items.append(rule7)
+                self.items.append(rule8)
+                self.items.append(rule9)
             else:
-                print(key,value)
+                print('Invlid indicator index :'+str( key))
 
 
     def create_rule_set(self, ind):
@@ -98,4 +182,5 @@ class Generator:
         :param ind: the individual containing the indexes for the selected rule
         :return: the list of control rules
         """
+        print (self.items)
         return self.items
