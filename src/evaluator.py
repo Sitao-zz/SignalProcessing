@@ -61,5 +61,8 @@ class Evaluator:
             Hold, Money, fortune = self.trade(row, Hold, Money)
             Fortune.append(fortune)
         self._data['Fortune'] = Fortune
+        self._data['Operation'] = 0
+        self._data.Operation[self._data.Signal > 0] = 1
+        self._data.Operation[self._data.Signal < 0] = -1
 
         return self._data.iloc[-1,9]
