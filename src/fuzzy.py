@@ -15,7 +15,7 @@ class DecisionMaker:
         Constructor, set up control system for decision
         :param rule_set: the rule_set used to create the
         """
-        self.dataheaders = data.columns
+        self.column_names = data.columns
         self.decisionCS = ctrl.ControlSystem(rule_set)
         self.decisionEval = ctrl.ControlSystemSimulation(self.decisionCS)
 
@@ -41,16 +41,13 @@ class DecisionMaker:
         2014-05-04 18:47:05.486877            0.9
         """
 
-        self.decisionEval.input[self.dataheaders[9]] = data[self.dataheaders[9]]
-        self.decisionEval.input[self.dataheaders[10]] = data[self.dataheaders[10]]
-        self.decisionEval.input[self.dataheaders[11]] = data[self.dataheaders[11]]
-        self.decisionEval.input[self.dataheaders[12]] = data[self.dataheaders[12]]
-        self.decisionEval.input[self.dataheaders[13]] = data[self.dataheaders[13]]
+        for name in self.column_names:
+            self.decisionEval.input[name] = data[name]
         self.decisionEval.compute()
         decision = round((self.decisionEval.output['decision'] - 5) / 10,2)
 
         consequents = [[]]
-        consequents[0] = [data[self.dataheaders[3]], decision]
+        consequents[0] = [data[self.column_names[0]], decision]
 
         # consequents[0][0]  is DateTime Index  20110103-10:38:00
         # consequents[0][1]  is decision  e.g. 0.2  , -0.3

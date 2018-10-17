@@ -35,7 +35,7 @@ toolbox.register("attr_item", random.random, NBR_ITEMS)
 #       define 'individual' to be an individual
 #       consisting of 100 'attr_bool' elements ('genes')
 toolbox.register("individual", tools.initRepeat, creator.Individual,
-                 toolbox.attr_float, IND_INIT_SIZE)
+                 toolbox.attr_item, IND_INIT_SIZE)
 
 # define the population to be a list of individuals
 toolbox.register("population", tools.initRepeat, list, toolbox.individual)
