@@ -15,32 +15,9 @@ class DecisionMaker:
         Constructor, set up control system for decision
         :param rule_set: the rule_set used to create the
         """
-
-        if not self.checkData(data):
-            return
-
+        self.dataheaders = data.columns
         self.decisionCS = ctrl.ControlSystem(rule_set)
         self.decisionEval = ctrl.ControlSystemSimulation(self.decisionCS)
-
-    def checkData(self, data):
-        """
-        This method verifies the correctness of the data:
-        (1) checks correct number of variables
-        (2) checks at least one row of data exists
-
-        :param data:
-        :return:
-        """
-        if len(data.columns) < NUM_VARIABLES:
-            print("Insufficient fuzzy variables")
-            return False
-
-        if len(data) == 0:
-            print("No data found")
-            return False
-
-        self.dataheaders = data.columns
-        return True
 
     def defuzzify(self, data):
         """
@@ -64,14 +41,19 @@ class DecisionMaker:
         2014-05-04 18:47:05.486877            0.9
         """
 
-        self.decisionEval.input[self.dataheaders[1]] = data[self.dataheaders[1]]
-        self.decisionEval.input[self.dataheaders[2]] = data[self.dataheaders[2]]
-        self.decisionEval.input[self.dataheaders[3]] = data[self.dataheaders[3]]
+        self.decisionEval.input[self.dataheaders[9]] = data[self.dataheaders[9]]
+        self.decisionEval.input[self.dataheaders[10]] = data[self.dataheaders[10]]
+        self.decisionEval.input[self.dataheaders[11]] = data[self.dataheaders[11]]
+        self.decisionEval.input[self.dataheaders[12]] = data[self.dataheaders[12]]
+        self.decisionEval.input[self.dataheaders[13]] = data[self.dataheaders[13]]
         self.decisionEval.compute()
-        decision = (self.decisionEval.output['decision'] - 5) / 10
+        decision = round((self.decisionEval.output['decision'] - 5) / 10,2)
 
-        consequences = [[]]
-        consequences[0] = [decision]
+        consequents = [[]]
+        consequents[0] = [data[self.dataheaders[3]], decision]
+
+        # consequents[0][0]  is DateTime Index  20110103-10:38:00
+        # consequents[0][1]  is decision  e.g. 0.2  , -0.3
 
         # return decision
-        return consequences
+        return consequents
