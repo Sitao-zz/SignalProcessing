@@ -11,7 +11,7 @@ import pandas as pd
 
 def main():
     # Read indicators data from csv if available
-    data = pd.read_csv("data_fuzzy_test.csv")
+    data = pd.read_csv("test_data_fuzzy.csv")
     data_indicator = data.iloc[:,range(9,len(data.columns),1)]
     print(data_indicator)
 
