@@ -2,23 +2,24 @@ import src.evaluator as eva
 import random
 import numpy
 
-from deap import tools, creator, base, algorithms
+from deap import tools
+from deap import creator
+from deap import base
+from deap import algorithms
 
-IND_INIT_SIZE = 30 # 基因编码位数 (10 rules * 3)
-MAX_ITEM = 50
-MAX_WEIGHT = 50
-NBR_ITEMS = 100
+IND_INIT_SIZE = 10 # 基因编码位数 10 rules
+NBR_ITEMS = 162
 
 # To assure reproductibility, the RNG seed is set prior to the items
 # dict initialization. It is also seeded in main().
 random.seed(64)
 
-# Create the item dictionary: item name is an integer, and value is
-# a (weight, value) 2-uple.
-items = {}
-# Create random items and store them in the items' dictionary.
-for i in range(NBR_ITEMS):
-    items[i] = (random.randint(1, 10), random.uniform(0, 100))
+# # Create the item dictionary: item name is an integer, and value is
+# # a (weight, value) 2-uple.
+# items = {}
+# # Create random items and store them in the items' dictionary. (18 rule * 9)
+# for i in range(NBR_ITEMS):
+#     items[i] = i;
 
 creator.create("FitnessMax", base.Fitness, weights=(1.0,))
 creator.create("Individual", set, fitness=creator.FitnessMax)
@@ -33,14 +34,14 @@ toolbox.register("attr_item", random.random, NBR_ITEMS)
 
 # Structure initializers
 #       define 'individual' to be an individual
-#       consisting of 100 'attr_bool' elements ('genes')
+#       consisting of 10 'attr_item' elements ('genes')
 toolbox.register("individual", tools.initRepeat, creator.Individual,
                  toolbox.attr_item, IND_INIT_SIZE)
 
 # define the population to be a list of individuals
 toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
-class GeneticEngin:
+class GeneticEngine:
 
     def __init__(self, data):
         self._evaluator = eva.Evaluator(data)
@@ -120,4 +121,8 @@ class GeneticEngin:
         stats.register("max", numpy.max, axis=0)
         algorithms.eaMuPlusLambda(pop, toolbox, MU, LAMBDA, CXPB, MUTPB, NGEN, stats,
                                   halloffame=hof)
+        print("The best individual is :", hof[-1])
+        print(len(pop))
+        print(len(hof))
+        #print("The best fitness is :", eval_ind(self, hof[-1]))
         return hof[-1]
