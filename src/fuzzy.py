@@ -47,7 +47,7 @@ class DecisionMaker:
         decision = round((self.decisionEval.output['decision'] - 5) / 10,2)
 
         consequents = [[]]
-        consequents[0] = [data[self.column_names[0]], decision]
+        consequents[0] = [decision]
 
         # consequents[0][0]  is DateTime Index  20110103-10:38:00
         # consequents[0][1]  is decision  e.g. 0.2  , -0.3

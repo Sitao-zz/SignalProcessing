@@ -44,15 +44,19 @@ class Evaluator:
         :param ind: individual Chromosome object
         :return: the fitness value, i.e. wealth value
         """
-        rule_set = self._generator.create_rule_set(ind)
+        #rule_set = self._generator.create_rule_set(ind)
+        data_indicator = self._data.iloc[:, range(9, len(self._data.columns), 1)]
+        rule_set, indicators = self._generator.create_rule_set(ind)
+        data_selected = data_indicator[indicators]
 
         # Calculate the signals according to the fuzzy rule set
-        decision = fuzzy.DecisionMaker(rule_set, self._data)
+        decision = fuzzy.DecisionMaker(rule_set, data_selected)
+
 
         #signals = pd.DataFrame([0.5, -0.4, 0.2, 0.4, 0.1, -0.2, -0.3, 0.2, 0.3, 0.1], index=self._data.index,columns=['Signal'])
         signals = decision.defuzzify(self._data)  #signal is a dataframe
 
-        self._data['Signal']=signals
+        self._data['Signal']=signals[0][0]
         # Calculate the fitness value according to the trading signals
         Hold=0
         Money=10000000
