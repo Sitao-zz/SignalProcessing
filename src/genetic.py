@@ -1,10 +1,10 @@
-import src.evaluator as eva
+from src.evaluator import Evaluator
 import random
 import numpy
 
 from deap import tools, creator, base, algorithms
 
-IND_INIT_SIZE = 30 # 基因编码位数 (10 rules * 3)
+IND_INIT_SIZE = 30  # 基因编码位数 (10 rules * 3)
 MAX_ITEM = 50
 MAX_WEIGHT = 50
 NBR_ITEMS = 100
@@ -40,10 +40,11 @@ toolbox.register("individual", tools.initRepeat, creator.Individual,
 # define the population to be a list of individuals
 toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
-class GeneticEngin:
+
+class GeneticEngine:
 
     def __init__(self, data):
-        self._evaluator = eva.Evaluator(data)
+        self._evaluator = Evaluator(data)
 
     @property
     def evaluator(self):

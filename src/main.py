@@ -4,12 +4,13 @@
 #       Flow of the training process        #
 #                                           #
 #############################################
-import src.genetic as genetic
+from src.genetic import GeneticEngine
+import pandas as pd
 
 
 # Get the best individual and its fitness value
-data = None  # TODO: need to get the training data
-engine = genetic.GeneticEngine(data)
+data = pd.read_csv("data\TrainDataWithInds.csv")
+engine = GeneticEngine(data)
 best_ind = engine.best_ind()
 
 evaluator = engine.evaluator

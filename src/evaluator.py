@@ -1,19 +1,21 @@
 import src.fuzzy as fuzzy
-import src.generator as generator
+from src.generator import Generator
 
 eva_data = None
 
+
 class Evaluator:
 
-    def __init__(self,generator, data):
-        self._generator = generator
+    def __init__(self, data):
+        data_indicator = data.iloc[:, range(9, len(data.columns), 1)]
+        self._generator = Generator(data_indicator)
         self._data = data
 
     @property
     def generator(self):
         return self._generator
 
-    def CalcBrokerage(self,volume, price):
+    def CalcBrokerage(self, volume, price):
         BrokerageRate = 0.2
         minFee = 30
         fee = volume * price * BrokerageRate / 100
@@ -22,7 +24,7 @@ class Evaluator:
         else:
             return fee
 
-    def trade(self,data, Hold, Money):
+    def trade(self, data, Hold, Money):
         if data['Signal'] > 0:  # signal is buy, money must be enough to buy, otherwise can not buy
             if Money > 0:
                 buy = round(Money * data['Signal'] / data['High '])
@@ -44,28 +46,25 @@ class Evaluator:
         :param ind: individual Chromosome object
         :return: the fitness value, i.e. wealth value
         """
-        #rule_set = self._generator.create_rule_set(ind)
-        data_indicator = self._data.iloc[:, range(9, len(self._data.columns), 1)]
+        # rule_set = self._generator.create_rule_set(ind)
         rule_set, indicators = self._generator.create_rule_set(ind)
-        data_selected = data_indicator[indicators]
+        data_selected = self._data[indicators]
 
         # Calculate the signals according to the fuzzy rule set
         decision = fuzzy.DecisionMaker(rule_set, data_selected)
 
-        #signals = pd.DataFrame([0.5, -0.4, 0.2, 0.4, 0.1, -0.2, -0.3, 0.2, 0.3, 0.1], index=self._data.index,columns=['Signal'])
+        # signals = pd.DataFrame([0.5, -0.4, 0.2, 0.4, 0.1, -0.2, -0.3, 0.2, 0.3, 0.1], index=self._data.index,columns=['Signal'])
 
-        signals =[]
-        #signals = decision.defuzzify(self._data)  #signal is a dataframe
+        signals = []
+        # signals = decision.defuzzify(self._data)  #signal is a dataframe
         for row, data_selected in zip(range(len(data_selected)), data_selected.iterrows()):
             consequents = decision.defuzzify(dict(data_selected[1]))
             signals.append(consequents[0][0])
 
-
-
-        self._data['Signal']=signals
+        self._data['Signal'] = signals
         # Calculate the fitness value according to the trading signals
-        Hold=0
-        Money=10000000
+        Hold = 0
+        Money = 10000000
         Fortune = []
         for i, row in self._data.iterrows():
             Hold, Money, fortune = self.trade(row, Hold, Money)
@@ -75,4 +74,4 @@ class Evaluator:
         self._data.Operation[self._data.Signal > 0] = 1
         self._data.Operation[self._data.Signal < 0] = -1
 
-        return self._data.iloc[-1,9]
+        return self._data.iloc[-1, 9]
