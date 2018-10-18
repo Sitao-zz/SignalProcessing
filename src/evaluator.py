@@ -5,8 +5,8 @@ eva_data = None
 
 class Evaluator:
 
-    def __init__(self, data):
-        self._generator = generator.Generator(data)
+    def __init__(self,generator, data):
+        self._generator = generator
         self._data = data
 
     @property
@@ -52,11 +52,17 @@ class Evaluator:
         # Calculate the signals according to the fuzzy rule set
         decision = fuzzy.DecisionMaker(rule_set, data_selected)
 
-
         #signals = pd.DataFrame([0.5, -0.4, 0.2, 0.4, 0.1, -0.2, -0.3, 0.2, 0.3, 0.1], index=self._data.index,columns=['Signal'])
-        signals = decision.defuzzify(self._data)  #signal is a dataframe
 
-        self._data['Signal']=signals[0][0]
+        signals =[]
+        #signals = decision.defuzzify(self._data)  #signal is a dataframe
+        for row, data_selected in zip(range(len(data_selected)), data_selected.iterrows()):
+            consequents = decision.defuzzify(dict(data_selected[1]))
+            signals.append(consequents[0][0])
+
+
+
+        self._data['Signal']=signals
         # Calculate the fitness value according to the trading signals
         Hold=0
         Money=10000000
