@@ -1,8 +1,6 @@
 import src.fuzzy as fuzzy
 from src.generator import Generator
 
-eva_data = None
-
 
 class Evaluator:
 
