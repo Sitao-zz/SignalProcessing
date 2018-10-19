@@ -1,5 +1,6 @@
 import src.fuzzy as fuzzy
 from src.generator import Generator
+from datetime import datetime as dt
 
 
 class Evaluator:
@@ -44,6 +45,7 @@ class Evaluator:
         :param ind: individual Chromosome object
         :return: the fitness value, i.e. wealth value
         """
+        start = dt.now()
         # rule_set = self._generator.create_rule_set(ind)
         rule_set, indicators = self._generator.create_rule_set(ind)
         data_selected = self._data[indicators]
@@ -60,6 +62,9 @@ class Evaluator:
             signals.append(consequents[0][0])
 
         self._data['Signal'] = signals
+        print(":::::Calculate signals ", dt.now() - start, ":::::")
+
+        start = dt.now()
         # Calculate the fitness value according to the trading signals
         Hold = 0
         Money = 10000000
@@ -71,5 +76,6 @@ class Evaluator:
         self._data['Operation'] = 0
         self._data.Operation[self._data.Signal > 0] = 1
         self._data.Operation[self._data.Signal < 0] = -1
+        print(":::::Calculate fitness value ", dt.now() - start, ":::::")
 
         return self._data.iloc[-1, 9]

@@ -7,10 +7,12 @@
 import unittest
 import pandas as pd
 from src.evaluator import Evaluator
+from datetime import datetime as dt
 
 
 class TestEvaluatorMethods(unittest.TestCase):
     def test_evaluate_ind(self):
+        start = dt.now()
         # Read indicators data from csv if available
         data = pd.read_csv("test_data_fuzzy.csv")
 
@@ -26,6 +28,8 @@ class TestEvaluatorMethods(unittest.TestCase):
         fit_val = myEvaluator.evaluate(individual)
         print(fit_val)
         self.assertTrue(fit_val is not None)
+        elapsed = dt.now() - start
+        print("Execution duration", elapsed)
 
 
 if __name__ == "__main__":
