@@ -7,45 +7,49 @@ from deap import creator
 from deap import base
 from deap import algorithms
 
-IND_INIT_SIZE = 10 # 基因编码位数 10 rules
-NBR_ITEMS = 162
-
-# To assure reproductibility, the RNG seed is set prior to the items
-# dict initialization. It is also seeded in main().
-random.seed(64)
-
-# # Create the item dictionary: item name is an integer, and value is
-# # a (weight, value) 2-uple.
-# items = {}
-# # Create random items and store them in the items' dictionary. (18 rule * 9)
-# for i in range(NBR_ITEMS):
-#     items[i] = i;
-
-creator.create("FitnessMax", base.Fitness, weights=(1.0,))
-creator.create("Individual", set, fitness=creator.FitnessMax)
-
-toolbox = base.Toolbox()
-
-# Attribute generator
-#       define 'attr_item' to be an attribute ('gene')
-#       which corresponds to integers sampled uniformly
-#       from the range [1,10] (i.e. 1 to 10 with equal probability)
-toolbox.register("attr_item", random.random, NBR_ITEMS)
-
-# Structure initializers
-#       define 'individual' to be an individual
-#       consisting of 10 'attr_item' elements ('genes')
-toolbox.register("individual", tools.initRepeat, creator.Individual,
-                 toolbox.attr_item, IND_INIT_SIZE)
-
-# define the population to be a list of individuals
-toolbox.register("population", tools.initRepeat, list, toolbox.individual)
+IND_INIT_SIZE = 10  # 基因编码位数 10 rules
+NBR_ITEMS = 135
 
 
 class GeneticEngine:
 
     def __init__(self, data):
         self._evaluator = Evaluator(data)
+
+        # To assure reproductibility, the RNG seed is set prior to the items
+        # dict initialization. It is also seeded in main().
+        random.seed(64)
+
+        # # Create the item dictionary: item name is an integer, and value is
+        # # a weight.
+        # items = {}
+        # # Create random items and store them in the items' dictionary. (18 rule * 9)
+        # for i in range(NBR_ITEMS):
+        #     items[i] = i;
+        creator.create("FitnessMax", base.Fitness, weights=(-1.0, 1.0))
+        creator.create("Individual", set, fitness=creator.FitnessMax)
+
+        self.toolbox = base.Toolbox()
+
+        # Attribute generator
+        #       define 'attr_item' to be an attribute ('gene')
+        #       which corresponds to integers sampled uniformly
+        #       from the range [1,10] (i.e. 1 to 10 with equal probability)
+        self.toolbox.register("attr_item", random.randrange, NBR_ITEMS)
+
+        # Structure initializers
+        #       define 'individual' to be an individual
+        #       consisting of 10 'attr_item' elements ('genes')
+        self.toolbox.register("individual", tools.initRepeat, creator.Individual,
+                              self.toolbox.attr_item, IND_INIT_SIZE)
+
+        # define the population to be a list of individuals
+        self.toolbox.register("population", tools.initRepeat, list, self.toolbox.individual)
+
+        self.toolbox.register("evaluate", self.eval_ind)
+        self.toolbox.register("mate", self.cx_ind)
+        self.toolbox.register("mutate", self.mutate_ind)
+        self.toolbox.register("select", tools.selNSGA2)
 
     @property
     def evaluator(self):
@@ -58,7 +62,8 @@ class GeneticEngine:
         :param ind: the individual Chromosome object to be evaluated
         :return: the fitness value
         """
-        return self._evaluator.evaluate(ind)
+        fit_val = self._evaluator.evaluate(ind)
+        return fit_val, fit_val
 
     def mutate_ind(self, ind, mu=0, sigma=4, chance_mutation=0.4):
         """
@@ -85,11 +90,6 @@ class GeneticEngine:
             ind2 ^= temp  # Symmetric Difference (inplace)
         return ind1, ind2
 
-    toolbox.register("evaluate", eval_ind)
-    toolbox.register("mate", cx_ind)
-    toolbox.register("mutate", mutate_ind)
-    toolbox.register("select", tools.selNSGA2)
-
     def verify_ind(self, ind):
         """
         Verify the validity of the individual Chromosome
@@ -113,15 +113,14 @@ class GeneticEngine:
         CXPB = 0.7
         MUTPB = 0.2
 
-        pop = toolbox.population(n=MU)
+        pop = self.toolbox.population(n=MU)
         hof = tools.ParetoFront()
         stats = tools.Statistics(lambda ind: ind.fitness.values)
         stats.register("avg", numpy.mean, axis=0)
         stats.register("std", numpy.std, axis=0)
         stats.register("min", numpy.min, axis=0)
         stats.register("max", numpy.max, axis=0)
-        algorithms.eaMuPlusLambda(pop, toolbox, MU, LAMBDA, CXPB, MUTPB, NGEN, stats,
-                                  halloffame=hof)
+        algorithms.eaMuPlusLambda(pop, self.toolbox, MU, LAMBDA, CXPB, MUTPB, NGEN, stats, halloffame=hof)
         print("The best individual is :", hof[-1])
         print(len(pop))
         print(len(hof))
