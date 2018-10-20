@@ -46,11 +46,11 @@ class DecisionMaker:
         self.decisionEval.compute()
         decision = round((self.decisionEval.output['decision'] - 5) / 10,2)
 
-        consequents = [[]]
-        consequents[0] = [decision]
+        consequences = [[]]
+        consequences[0] = [decision]
 
-        # consequents[0][0]  is DateTime Index  20110103-10:38:00
-        # consequents[0][1]  is decision  e.g. 0.2  , -0.3
+        # consequences[0][0]  is DateTime Index  20110103-10:38:00
+        # consequences[0][1]  is decision  e.g. 0.2  , -0.3
 
         # return decision
-        return consequents
+        return consequences

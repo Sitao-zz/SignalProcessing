@@ -58,8 +58,8 @@ class Evaluator:
         signals = []
         # signals = decision.defuzzify(self._data)  #signal is a dataframe
         for row, data_selected in zip(range(len(data_selected)), data_selected.iterrows()):
-            consequents = decision.defuzzify(dict(data_selected[1]))
-            signals.append(consequents[0][0])
+            consequences = decision.defuzzify(dict(data_selected[1]))
+            signals.append(consequences[0][0])
 
         self._data['Signal'] = signals
         print(":::::Calculate signals ", dt.now() - start, ":::::")
