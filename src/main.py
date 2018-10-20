@@ -1,4 +1,3 @@
-
 #############################################
 #                                           #
 #       Flow of the training process        #
@@ -7,7 +6,6 @@
 from src.genetic import GeneticEngine
 import pandas as pd
 from datetime import datetime as dt
-
 
 # Get the best individual and its fitness value
 start = dt.now()

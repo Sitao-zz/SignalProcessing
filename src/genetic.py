@@ -128,5 +128,5 @@ class GeneticEngine:
         print("The best individual is :", hof[-1])
         print(len(pop))
         print(len(hof))
-        #print("The best fitness is :", eval_ind(self, hof[-1]))
+        # print("The best fitness is :", eval_ind(self, hof[-1]))
         return hof[-1]

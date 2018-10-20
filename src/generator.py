@@ -81,7 +81,7 @@ class Generator:
         indicators = []
         for i in ind:
             rules.append(self.rules[i])
-            indicator = self.indicators[i//9]
+            indicator = self.indicators[i // 9]
             if indicator not in indicators:
                 indicators.append(indicator)
 
