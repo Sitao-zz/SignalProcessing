@@ -19,38 +19,28 @@ class DecisionMaker:
         self.decisionCS = ctrl.ControlSystem(rule_set)
         self.decisionEval = ctrl.ControlSystemSimulation(self.decisionCS)
 
-    def defuzzify(self, data):
+    def defuzzify(self, data_row):
         """
         This function evaluates the given data with inference engine
         and defuzzifies the output
         Returns decision
 
-        :param data:
-        :return:
-                                            degree
-        date
-        2014-05-01 18:47:05.069722            NaN
-        2014-05-01 18:47:05.119994            0.2
-        2014-05-02 18:47:05.178768            0.1
-        2014-05-02 18:47:05.230071           -0.3
-        2014-05-02 18:47:05.230071            0.4
-        2014-05-02 18:47:05.280592           -0.2
-        2014-05-03 18:47:05.332662            0.4
-        2014-05-03 18:47:05.385109           -0.6
-        2014-05-04 18:47:05.436523           -0.8
-        2014-05-04 18:47:05.486877            0.9
+        :param data_row:
+        :return: signal showing the operation degree in [-1, 1]
         """
 
         for name in self.column_names:
-            self.decisionEval.input[name] = data[name]
-        self.decisionEval.compute()
-        decision = round((self.decisionEval.output['decision'] - 5) / 10,2)
+            self.decisionEval.input[name] = data_row[name]
 
-        consequences = [[]]
-        consequences[0] = [decision]
+        signal = 0.0
+        try:
+            self.decisionEval.compute()
+            signal = round((self.decisionEval.output['decision'] - 5) / 10, 2)
+        except ValueError as err:
+            print(err)
 
         # consequences[0][0]  is DateTime Index  20110103-10:38:00
         # consequences[0][1]  is decision  e.g. 0.2  , -0.3
 
         # return decision
-        return consequences
+        return signal

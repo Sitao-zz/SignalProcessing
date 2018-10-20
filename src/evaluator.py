@@ -57,12 +57,13 @@ class Evaluator:
 
         signals = []
         # signals = decision.defuzzify(self._data)  #signal is a dataframe
-        for row, data_selected in zip(range(len(data_selected)), data_selected.iterrows()):
-            consequences = decision.defuzzify(dict(data_selected[1]))
-            signals.append(consequences[0][0])
+        for row_index, data_row in zip(range(len(data_selected)), data_selected.iterrows()):
+            dictionary = dict(data_row[1])
+            signal = decision.defuzzify(dictionary)
+            signals.append(signal)
 
         self._data['Signal'] = signals
-        print(":::::Calculate signals ", dt.now() - start, ":::::")
+        print("::::: [evaluator] Calculate signals ", dt.now() - start, ":::::")
 
         start = dt.now()
         # Calculate the fitness value according to the trading signals
@@ -73,9 +74,10 @@ class Evaluator:
             Hold, Money, fortune = self.trade(row, Hold, Money)
             Fortune.append(fortune)
         self._data['Fortune'] = Fortune
-        self._data['Operation'] = 0
-        self._data.Operation[self._data.Signal > 0] = 1
-        self._data.Operation[self._data.Signal < 0] = -1
-        print(":::::Calculate fitness value ", dt.now() - start, ":::::")
+        # self._data['Operation'] = 0
+        # self._data.Operation[self._data.Signal > 0] = 1
+        # self._data.Operation[self._data.Signal < 0] = -1
+        fit_val = self._data.iloc[-1]['Fortune']
 
-        return self._data.iloc[-1, 9]
+        print("::::: [evaluator] Calculate fitness value", dt.now() - start, ":::::")
+        return fit_val

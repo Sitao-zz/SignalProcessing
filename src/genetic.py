@@ -6,6 +6,7 @@ from deap import tools
 from deap import creator
 from deap import base
 from deap import algorithms
+from datetime import datetime as dt
 
 IND_INIT_SIZE = 10  # 基因编码位数 10 rules
 NBR_ITEMS = 135
@@ -26,7 +27,7 @@ class GeneticEngine:
         # # Create random items and store them in the items' dictionary. (18 rule * 9)
         # for i in range(NBR_ITEMS):
         #     items[i] = i;
-        creator.create("FitnessMax", base.Fitness, weights=(-1.0, 1.0))
+        creator.create("FitnessMax", base.Fitness, weights=(1.0,))
         creator.create("Individual", set, fitness=creator.FitnessMax)
 
         self.toolbox = base.Toolbox()
@@ -62,8 +63,11 @@ class GeneticEngine:
         :param ind: the individual Chromosome object to be evaluated
         :return: the fitness value
         """
+        print("\n:::: [genetic] individual", ind, "::::")
+        start = dt.now()
         fit_val = self._evaluator.evaluate(ind)
-        return fit_val, fit_val
+        print(":::: [genetic] Evaluate individual. fitness value", fit_val, "Duration", dt.now() - start, "::::\n")
+        return fit_val, None
 
     def mutate_ind(self, ind, mu=0, sigma=4, chance_mutation=0.4):
         """
