@@ -14,28 +14,64 @@ class Evaluator:
     def generator(self):
         return self._generator
 
-    def CalcBrokerage(self, volume, price):
-        BrokerageRate = 0.2
+    def calcBrokerage(self, volume, price):
+        brokerageRate = 0.2
         minFee = 30
-        fee = volume * price * BrokerageRate / 100
-        if fee < minFee:
+        fee = volume * price * brokerageRate / 100
+        if volume == 0 | price == 0:
+            return 0
+        elif fee < minFee:
             return 30
         else:
             return fee
 
-    def trade(self, data, Hold, Money):
-        if data['Signal'] > 0:  # signal is buy, money must be enough to buy, otherwise can not buy
-            if Money > 0:
-                buy = round(Money * data['Signal'] / data['High '])
-                Hold = Hold + buy
-                Money = Money - buy * data['High '] - self.CalcBrokerage(buy, data['High '])
-        if data['Signal'] < 0:  # signal is sell, hold must be enough to sell, otherwise can not sell
-            if Hold > 0:  # data['Signal']<0
-                sell = -Hold * data['Signal']
-                Hold = Hold - sell
-                Money = Money + sell * data['Low'] - self.CalcBrokerage(sell, data['Low'])
-        fortune = Hold * data['Close'] + Money
-        return Hold, Money, fortune
+    # Execute trade and return Long position, Short Position.
+    # Update and return new Short Price if there is short instrument executed.
+    def execute(self, data, balance, longPos, shortPos, lastShortPrice):
+
+        unrealizedShortValue = shortPos * (lastShortPrice - data['High '])
+        unrealizedLongValue = longPos * data['High ']
+
+        if data['Signal'] > 0:
+
+            valueToLong = (balance + unrealizedShortValue) * data['Signal']
+
+            if valueToLong > unrealizedShortValue:
+                posToBuy = round(valueToLong / data['Low'])
+                longPos = longPos + posToBuy
+                balance = balance + unrealizedShortValue - valueToLong - self.calcBrokerage(shortPos, data[
+                    'High ']) - self.calcBrokerage(posToBuy, data['Low'])
+                shortPos = 0
+                lastShortPrice = 0
+            else:
+                posToLong = round(valueToLong / data['High '])
+                shortPos = shortPos - posToLong
+                balance = balance + shortPos * (lastShortPrice - data['High ']) - self.calcBrokerage(posToLong,
+                                                                                                    data['High '])
+                longPos = 0
+                lastShortPrice = data['Low']
+
+        elif data['Signal'] < 0:
+
+            valueToShort = (balance + unrealizedLongValue) * data['Signal']
+
+            if valueToShort > unrealizedLongValue:
+                posToShort = round(valueToShort / data['High '])
+                shortPos = shortPos + posToShort
+                balance = balance + longPos * data['High '] - self.calcBrokerage(longPos,
+                                                                                data['Low']) - self.calcBrokerage(
+                    posToShort, data['Low'])
+                longPos = 0
+                lastShortPrice = data['Low']
+            else:
+                posToShort = round(valueToShort / data['Low'])
+                longPos = longPos - posToShort
+                balance = balance - valueToShort - self.calcBrokerage(posToShort, data['High '])
+                shortPos = 0
+                lastShortPrice = 0
+
+        assetValue = balance + longPos * data['Low'] + shortPos * (lastShortPrice - data['High '])
+        return balance, longPos, shortPos, lastShortPrice, assetValue
 
     def evaluate(self, ind):
         """
@@ -53,7 +89,8 @@ class Evaluator:
         # Calculate the signals according to the fuzzy rule set
         decision = fuzzy.DecisionMaker(rule_set, data_selected)
 
-        # signals = pd.DataFrame([0.5, -0.4, 0.2, 0.4, 0.1, -0.2, -0.3, 0.2, 0.3, 0.1], index=self._data.index,columns=['Signal'])
+        # signals = pd.DataFrame([0.5, -0.4, 0.2, 0.4, 0.1, -0.2, -0.3, 0.2, 0.3, 0.1]
+        # index=self._data.index,columns=['Signal'])
 
         signals = []
         # signals = decision.defuzzify(self._data)  #signal is a dataframe
@@ -67,12 +104,18 @@ class Evaluator:
 
         start = dt.now()
         # Calculate the fitness value according to the trading signals
-        Hold = 0
-        Money = 10000000
+        Balance = 10000000  # initial amount = 10000000
+        AssetValue = 0
+        LongPosition = 0
+        ShortPosition = 0
+        LastShortPrice = 0
         Fortune = []
+
         for i, row in self._data.iterrows():
-            Hold, Money, fortune = self.trade(row, Hold, Money)
-            Fortune.append(fortune)
+            Balance, LongPosition, ShortPosition, LastShortPrice, AssetValue = self.execute(row, Balance, LongPosition,
+                                                                                            ShortPosition,
+                                                                                            LastShortPrice)
+            Fortune.append(AssetValue)
         self._data['Fortune'] = Fortune
         # self._data['Operation'] = 0
         # self._data.Operation[self._data.Signal > 0] = 1
