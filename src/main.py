@@ -11,7 +11,7 @@ from datetime import datetime as dt
 
 # Get the best individual and its fitness value
 start = dt.now()
-data = pd.read_csv("data\TrainDataWithInds.csv")
+data = pd.read_csv("data\TrainDataWithInds_trim.csv")
 print("::::: [main] Load data ", dt.now() - start, ":::::")
 
 start = dt.now()
