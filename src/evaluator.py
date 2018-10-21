@@ -2,17 +2,21 @@ import src.fuzzy as fuzzy
 from src.generator import Generator
 from datetime import datetime as dt
 import math
+import pandas as pd
 
 BROKERAGE_RATE = 0.2
 BROKERAGE_MIN_FEE = 30
-FIRST_INDICATOR_INDEX = 6
+FIRST_INDICATOR_INDEX = 5  # DateTime is the index and is not counted as the column
 
 
 class Evaluator:
 
-    def __init__(self, data):
+    def __init__(self, data, generator=None):
         data_indicator = data.iloc[:, range(FIRST_INDICATOR_INDEX, len(data.columns), 1)]
-        self._generator = Generator(data_indicator)
+        if generator is None:
+            self._generator = Generator(data_indicator)
+        else:
+            self._generator = generator
         self._data = data
 
     @property
@@ -102,6 +106,50 @@ class Evaluator:
         asset = round(asset, 2)
         return balance, longPos, shortPos, asset
 
+    def calculate_signals(self, ind):
+        start = dt.now()
+        rule_set, indicators = self._generator.create_rule_set(ind)
+        data_selected = self._data[indicators]
+
+        # Calculate the signals according to the fuzzy rule set
+        decision = fuzzy.DecisionMaker(rule_set, data_selected)
+
+        signal_data = []
+        for row_index, data_row in zip(range(len(data_selected)), data_selected.iterrows()):
+            dictionary = dict(data_row[1])
+            signal = decision.defuzzify(dictionary)
+            signal_data.append(signal)
+
+        print("::::: [evaluator] Calculate signals ", dt.now() - start, ":::::")
+        return signal_data
+
+    def calculate_fortune(self):
+        start = dt.now()
+        # Calculate the fitness value according to the trading signals
+        balance = 10000000  # initial amount = 10000000
+        long_pos = 0
+        short_pos = 0
+
+        balance_data = []
+        long_pos_data = []
+        short_pos_data = []
+        fortune_data = []
+
+        for i, row in self._data.iterrows():
+            balance, long_pos, short_pos, asset_value = self.execute(row, balance, long_pos,
+                                                                     short_pos)
+            balance_data.append(balance)
+            long_pos_data.append(long_pos)
+            short_pos_data.append(short_pos)
+            fortune_data.append(asset_value)
+            if asset_value <= 0:
+                # stop the evaluation when the asset value becomes 0 or less
+                print("::::: [evaluator] Calculate fitness value", dt.now() - start, ":::::")
+                return None, None, None, fortune_data
+
+        print("::::: [evaluator] Calculate fitness value", dt.now() - start, ":::::")
+        return balance_data, long_pos_data, short_pos_data, fortune_data
+
     def evaluate(self, ind, filename=""):
         """
         Evaluate the fitness value of the Chromosome object
@@ -111,47 +159,17 @@ class Evaluator:
         :param filename: the name of the file where the transactions to be exported to
         :return: the fitness value, i.e. wealth value
         """
-        start = dt.now()
-        # rule_set = self._generator.create_rule_set(ind)
-        rule_set, indicators = self._generator.create_rule_set(ind)
-        data_selected = self._data[indicators]
+        self._data['Signal'] = self.calculate_signals(ind)
+        balance_data, long_pos_data, short_pos_data, fortune_data = self.calculate_fortune()
 
-        # Calculate the signals according to the fuzzy rule set
-        decision = fuzzy.DecisionMaker(rule_set, data_selected)
+        if balance_data is None:
+            #
+            return fortune_data[-1]
 
-        # signals = pd.DataFrame([0.5, -0.4, 0.2, 0.4, 0.1, -0.2, -0.3, 0.2, 0.3, 0.1]
-        # index=self._data.index,columns=['Signal'])
-
-        signals = []
-        # signals = decision.defuzzify(self._data)  #signal is a dataframe
-        for row_index, data_row in zip(range(len(data_selected)), data_selected.iterrows()):
-            dictionary = dict(data_row[1])
-            signal = decision.defuzzify(dictionary)
-            signals.append(signal)
-
-        self._data['Signal'] = signals
-        print("::::: [evaluator] Calculate signals ", dt.now() - start, ":::::")
-
-        start = dt.now()
-        # Calculate the fitness value according to the trading signals
-        Balance = 10000000  # initial amount = 10000000
-        LongPosition = 0
-        ShortPosition = 0
-        Fortune = []
-
-        for i, row in self._data.iterrows():
-            Balance, LongPosition, ShortPosition, AssetValue = self.execute(row, Balance, LongPosition,
-                                                                            ShortPosition)
-            if AssetValue <= 0:
-                # stop the evaluation when the asset value becomes 0 or less
-                print("::::: [evaluator] Calculate fitness value", dt.now() - start, ":::::")
-                return AssetValue
-            Fortune.append(AssetValue)
-
-        self._data['Fortune'] = Fortune
+        self._data['Fortune'] = fortune_data
         if filename:
+            self._data['Balance'] = balance_data
+            self._data['LongPos'] = long_pos_data
+            self._data['ShortPos'] = short_pos_data
             self._data.to_csv(filename)
-
-        fit_val = self._data.iloc[-1]['Fortune']
-        print("::::: [evaluator] Calculate fitness value", dt.now() - start, ":::::")
-        return fit_val
+        return fortune_data[-1]

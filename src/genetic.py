@@ -8,7 +8,7 @@ from deap import base
 from deap import algorithms
 from datetime import datetime as dt
 
-IND_INIT_SIZE = 10  # 基因编码位数 10 rules
+IND_INIT_SIZE = 10  # 10 rules
 
 
 class GeneticEngine:
@@ -73,7 +73,7 @@ class GeneticEngine:
         print(":::: [genetic] Evaluate individual. fitness value", fit_val, "Duration", dt.now() - start, "::::\n")
         return fit_val, None
 
-    def mutate_ind(self, ind, mu=0, sigma=4, chance_mutation=0.4):
+    def mutate_ind(self, ind, mu=0, sigma=4, chance_mutation=0.05):
         """
         Mutate the individual by changing the Chromosome composition
         :param mu:
@@ -119,7 +119,7 @@ class GeneticEngine:
         MU = 50
         LAMBDA = 100
         CXPB = 0.7
-        MUTPB = 0.2
+        MUTPB = 0.05
 
         pop = self.toolbox.population(n=MU)
         hof = tools.ParetoFront()
@@ -130,7 +130,7 @@ class GeneticEngine:
         stats.register("max", numpy.max, axis=0)
         try:
             algorithms.eaMuPlusLambda(pop, self.toolbox, MU, LAMBDA, CXPB, MUTPB, NGEN, stats, halloffame=hof)
-        except Exception as err:
+        except ValueError as err:
             print(err)
             return self._best_ind
 
