@@ -15,7 +15,7 @@ class GeneticEngine:
 
     def __init__(self, data):
         self._evaluator = Evaluator(data)
-        self._item_count = self._evaluator.generator.rule_set_len()
+        self._item_count = self._evaluator.generator.rule_set_len
         self._best_ind = None
         self._best_fit_val = 0
 
