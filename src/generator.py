@@ -35,21 +35,13 @@ class Generator:
             max = data[name].max()
             min = data[name].min()
             mean = data[name].mean()
-            llb = round(min * 0.9, 2)
+            llb = round(min - (max - min) * 0.1, 2)
             lrb = round(min + (mean - min) * 0.6, 2)
             mlb = round(min + (mean - min) * 0.4, 2)
             mid = round(mean, 2)
             mrb = round(mean + (max - mean) * 0.8, 2)
             hlb = round(mean + (max - mean) * 0.6, 2)
-            hrb = round(max * 1.1, 2)
-            # print("Indicator Name : " +name + " max value : "+str(max)
-            #       +" min value : " +str(min) + " mean value : "+str(mean))
-            # print("low left boundary value : " + str(llb) + " low right boundary value : " + str(lrb) )
-            # print ("medium left boundary value : " +str(mlb))
-            # print("middle value : " +str(mid))
-            # print ("medium right boundary value :" +str(mrb))
-            # print ("high left boundary value : " +str(hlb))
-            # print ("high right boundary value : " +str(hrb))
+            hrb = round(max + (max - min) * 0.1, 2)
 
             x = np.arange(llb, hrb, 0.01)
             # column starts from the one after the offset
@@ -58,6 +50,15 @@ class Generator:
             indicator['me'] = fuzz.trimf(x, [mlb, mid, mrb])
             indicator['hi'] = fuzz.trimf(x, [hlb, hrb, hrb])
             self.ind_funcs.append(indicator)
+
+            # if name == "SMA10":
+            #     indicator.view()
+            #     print("low left boundary value : " + str(llb) + " low right boundary value : " + str(lrb))
+            #     print("medium left boundary value : " + str(mlb))
+            #     print("middle value : " + str(mid))
+            #     print("medium right boundary value :" + str(mrb))
+            #     print("high left boundary value : " + str(hlb))
+            #     print("high right boundary value : " + str(hrb))
 
         # set up decision
         x = np.arange(0, 11, 1)
