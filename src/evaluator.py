@@ -26,9 +26,9 @@ class Evaluator:
     def trade(self, data, Hold, Money):
         if data['Signal'] > 0:  # signal is buy, money must be enough to buy, otherwise can not buy
             if Money > 0:
-                buy = round(Money * data['Signal'] / data['High '])
+                buy = round(Money * data['Signal'] / data['High'])
                 Hold = Hold + buy
-                Money = Money - buy * data['High '] - self.CalcBrokerage(buy, data['High '])
+                Money = Money - buy * data['High'] - self.CalcBrokerage(buy, data['High'])
         if data['Signal'] < 0:  # signal is sell, hold must be enough to sell, otherwise can not sell
             if Hold > 0:  # data['Signal']<0
                 sell = -Hold * data['Signal']
