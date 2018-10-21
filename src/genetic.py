@@ -9,7 +9,7 @@ from deap import algorithms
 from datetime import datetime as dt
 
 IND_INIT_SIZE = 10  # 基因编码位数 10 rules
-NBR_ITEMS = 135
+NBR_ITEMS = 162
 
 
 class GeneticEngine:
