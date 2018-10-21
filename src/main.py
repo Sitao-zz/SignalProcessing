@@ -31,7 +31,7 @@ print("::::: [main] Initialize GeneticEngine", dt.now() - start, ":::::")
 
 start = dt.now()
 best_ind = engine.best_ind()
-if best_ind is None:
+if best_ind is not None:
     print("::::: [main] Find the best individual", dt.now() - start, ":::::")
     evaluator = engine.evaluator
     value = evaluator.evaluate(best_ind, "data/transactions_best.csv")
