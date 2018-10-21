@@ -31,7 +31,7 @@ class Evaluator:
         assert (balance >= 0)
         assert (longPos * shortPos == 0)  # at least on of longPos and shortPos is 0
 
-        buy_price = data['High ']  # the price for buy is at High
+        buy_price = data['High']  # the price for buy is at High
         sell_price = data['Low']  # the price for sell is at Low
         asset = round(balance + longPos * sell_price - shortPos * buy_price, 2)
         if asset <= 0:

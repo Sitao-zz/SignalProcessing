@@ -11,14 +11,14 @@ class DataProcessing_Daily:
         df = df.drop(['General', 'Time'], axis=1)
 
         openGrouped = df['Open'].groupby(df['Date']).first()
-        highGrouped = df['High '].groupby(df['Date']).max()
+        highGrouped = df['High'].groupby(df['Date']).max()
         lowGrouped = df['Low'].groupby(df['Date']).min()
         closeGrouped = df['Close'].groupby(df['Date']).last()
-        volumeGrouped = df['Volume '].groupby(df['Date']).sum()
+        volumeGrouped = df['Volume'].groupby(df['Date']).sum()
 
         df = pd.DataFrame(
-            {'Open': openGrouped, 'High ': highGrouped, 'Low': lowGrouped, 'Close': closeGrouped,
-             'Volume ': volumeGrouped})
+            {'Open': openGrouped, 'High': highGrouped, 'Low': lowGrouped, 'Close': closeGrouped,
+             'Volume': volumeGrouped})
         df['dt'] = df.index.astype(str)
         df['DateTime'] = pd.to_datetime(df['dt'], format=' % Y % m % d % H: % M: % S', errors='ignore')
         df = df.set_index(['DateTime'])
