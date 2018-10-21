@@ -37,7 +37,8 @@ class DecisionMaker:
             self.decisionEval.compute()
             signal = round((self.decisionEval.output['decision'] - 5) / 10, 2)
         except ValueError as err:
-            print(err)
+            # print(err)
+            pass
 
         # consequences[0][0]  is DateTime Index  20110103-10:38:00
         # consequences[0][1]  is decision  e.g. 0.2  , -0.3

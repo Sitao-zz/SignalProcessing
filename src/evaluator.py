@@ -1,6 +1,7 @@
 import src.fuzzy as fuzzy
 from src.generator import Generator
 from datetime import datetime as dt
+import math
 
 
 class Evaluator:
@@ -15,63 +16,81 @@ class Evaluator:
         return self._generator
 
     def calcBrokerage(self, volume, price):
+        if volume == 0 or price == 0:
+            return 0
+
         brokerageRate = 0.2
         minFee = 30
-        fee = volume * price * brokerageRate / 100
-        if volume == 0 | price == 0:
-            return 0
-        elif fee < minFee:
-            return 30
-        else:
-            return fee
+        fee = round(volume * price * brokerageRate / 100, 2)
+        return max(minFee, fee)
 
     # Execute trade and return Long position, Short Position.
     # Update and return new Short Price if there is short instrument executed.
-    def execute(self, data, balance, longPos, shortPos, lastShortPrice):
+    def execute(self, data, balance, longPos, shortPos):
+        assert (balance >= 0)
+        assert (longPos * shortPos == 0)  # at least on of longPos and shortPos is 0
 
-        unrealizedShortValue = shortPos * (lastShortPrice - data['High '])
-        unrealizedLongValue = longPos * data['High ']
+        buy_price = data['High ']  # the price for buy is at High
+        sell_price = data['Low']  # the price for sell is at Low
+        asset = round(balance + longPos * sell_price - shortPos * buy_price, 2)
+        if asset <= 0:
+            return balance, longPos, shortPos, asset
 
-        if data['Signal'] > 0:
-
-            valueToLong = (balance + unrealizedShortValue) * data['Signal']
-
-            if valueToLong > unrealizedShortValue:
-                posToBuy = round(valueToLong / data['Low'])
-                longPos = longPos + posToBuy
-                balance = balance + unrealizedShortValue - valueToLong - self.calcBrokerage(shortPos, data[
-                    'High ']) - self.calcBrokerage(posToBuy, data['Low'])
-                shortPos = 0
-                lastShortPrice = 0
+        signal = data['Signal']  # the strength of the operation
+        # print("Signal", signal, "High", buy_price, "Low", sell_price)
+        if signal > 0:
+            if longPos > 0:
+                # same direction should use lower value (i.e. balance) to restore the position
+                valueToLong = balance * signal
             else:
-                posToLong = round(valueToLong / data['High '])
-                shortPos = shortPos - posToLong
-                balance = balance + shortPos * (lastShortPrice - data['High ']) - self.calcBrokerage(posToLong,
-                                                                                                    data['High '])
-                longPos = 0
-                lastShortPrice = data['Low']
+                # opposite direction should use larger value (i.e. balance) to restore the position
+                # if (shortPos == 0) then (asset == balance)
+                valueToLong = balance * signal
 
-        elif data['Signal'] < 0:
-
-            valueToShort = (balance + unrealizedLongValue) * data['Signal']
-
-            if valueToShort > unrealizedLongValue:
-                posToShort = round(valueToShort / data['High '])
-                shortPos = shortPos + posToShort
-                balance = balance + longPos * data['High '] - self.calcBrokerage(longPos,
-                                                                                data['Low']) - self.calcBrokerage(
-                    posToShort, data['Low'])
-                longPos = 0
-                lastShortPrice = data['Low']
+            posToBuy = math.floor(valueToLong / buy_price)
+            if posToBuy == 0:
+                pass
+            elif shortPos > posToBuy:
+                # longPos is 0 here, reduce the shortPos
+                shortPos -= posToBuy
+                balance -= posToBuy * buy_price + self.calcBrokerage(posToBuy, buy_price)
             else:
-                posToShort = round(valueToShort / data['Low'])
-                longPos = longPos - posToShort
-                balance = balance - valueToShort - self.calcBrokerage(posToShort, data['High '])
+                # extra longPos is needed, clear all the shortPos
+                deltaPos = posToBuy - shortPos
+                longPos += deltaPos
+                balance -= posToBuy * buy_price + self.calcBrokerage(shortPos, buy_price) \
+                           + self.calcBrokerage(deltaPos, buy_price)
                 shortPos = 0
-                lastShortPrice = 0
 
-        assetValue = balance + longPos * data['Low'] + shortPos * (lastShortPrice - data['High '])
-        return balance, longPos, shortPos, lastShortPrice, assetValue
+        elif signal < 0:
+            if shortPos > 0:
+                # same direction should use lower value (i.e. asset) to restore the position
+                valueToShort = asset * (signal * -1)
+            else:
+                # opposite direction should use larger value (i.e. asset) to restore the position
+                valueToShort = asset * (signal * -1)
+
+            posToShort = math.floor(valueToShort / sell_price)
+            if posToShort == 0:
+                pass
+            elif longPos > posToShort:
+                # shortPos is 0 here, reduce the longPos
+                longPos -= posToShort
+                balance += posToShort * sell_price - self.calcBrokerage(posToShort, sell_price)
+            else:
+                # extra shortPos is needed, clear all the longPos
+                deltaPos = posToShort - longPos
+                shortPos += deltaPos
+                balance += longPos * sell_price - self.calcBrokerage(longPos, sell_price)
+                longPos = 0
+
+        asset = balance + longPos * sell_price - shortPos * buy_price
+        # print("balance", balance, "longPos", longPos, "shortPos", shortPos, "asset", asset)
+
+        # round the balance and asset value to prevent the drifting of floating values
+        balance = round(balance, 2)
+        asset = round(asset, 2)
+        return balance, longPos, shortPos, asset
 
     def evaluate(self, ind):
         """
@@ -105,17 +124,19 @@ class Evaluator:
         start = dt.now()
         # Calculate the fitness value according to the trading signals
         Balance = 10000000  # initial amount = 10000000
-        AssetValue = 0
         LongPosition = 0
         ShortPosition = 0
-        LastShortPrice = 0
         Fortune = []
 
         for i, row in self._data.iterrows():
-            Balance, LongPosition, ShortPosition, LastShortPrice, AssetValue = self.execute(row, Balance, LongPosition,
-                                                                                            ShortPosition,
-                                                                                            LastShortPrice)
+            Balance, LongPosition, ShortPosition, AssetValue = self.execute(row, Balance, LongPosition,
+                                                                            ShortPosition)
+            if AssetValue <= 0:
+                # stop the evaluation when the asset value becomes 0 or less
+                print("::::: [evaluator] Calculate fitness value", dt.now() - start, ":::::")
+                return AssetValue
             Fortune.append(AssetValue)
+
         self._data['Fortune'] = Fortune
         # self._data['Operation'] = 0
         # self._data.Operation[self._data.Signal > 0] = 1
