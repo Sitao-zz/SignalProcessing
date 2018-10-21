@@ -3,6 +3,9 @@ from src.generator import Generator
 from datetime import datetime as dt
 import math
 
+BROKERAGE_RATE = 0.2
+BROKERAGE_MIN_FEE = 30
+
 
 class Evaluator:
 
@@ -19,10 +22,8 @@ class Evaluator:
         if volume == 0 or price == 0:
             return 0
 
-        brokerageRate = 0.2
-        minFee = 30
-        fee = round(volume * price * brokerageRate / 100, 2)
-        return max(minFee, fee)
+        fee = round(volume * price * BROKERAGE_RATE / 100, 2)
+        return fee
 
     # Execute trade and return Long position, Short Position.
     # Update and return new Short Price if there is short instrument executed.
@@ -48,6 +49,10 @@ class Evaluator:
                 valueToLong = balance * signal
 
             posToBuy = math.floor(valueToLong / buy_price)
+            if self.calcBrokerage(posToBuy, buy_price) <= BROKERAGE_MIN_FEE:
+                # if the volume is too small, do not execute
+                return balance, longPos, shortPos, asset
+
             if posToBuy == 0:
                 pass
             elif shortPos > posToBuy:
@@ -71,6 +76,10 @@ class Evaluator:
                 valueToShort = asset * (signal * -1)
 
             posToShort = math.floor(valueToShort / sell_price)
+            if self.calcBrokerage(posToShort, sell_price) <= BROKERAGE_MIN_FEE:
+                # if the volume is too small, do not execute
+                return balance, longPos, shortPos, asset
+
             if posToShort == 0:
                 pass
             elif longPos > posToShort:
