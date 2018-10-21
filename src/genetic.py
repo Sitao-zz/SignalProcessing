@@ -69,6 +69,7 @@ class GeneticEngine:
         fit_val = self._evaluator.evaluate(ind)
         if fit_val > self._best_fit_val:
             self._best_ind = ind
+            self._best_fit_val = fit_val
         print(":::: [genetic] Evaluate individual. fitness value", fit_val, "Duration", dt.now() - start, "::::\n")
         return fit_val, None
 
