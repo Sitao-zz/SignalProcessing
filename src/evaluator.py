@@ -5,9 +5,12 @@ from datetime import datetime as dt
 
 class Evaluator:
 
-    def __init__(self, data):
+    def __init__(self, data, generator=None):
         data_indicator = data.iloc[:, range(9, len(data.columns), 1)]
-        self._generator = Generator(data_indicator)
+        if generator is None:
+            self._generator = Generator(data_indicator)
+        else:
+            self._generator = generator
         self._data = data
 
     @property
@@ -37,7 +40,7 @@ class Evaluator:
         fortune = Hold * data['Close'] + Money
         return Hold, Money, fortune
 
-    def evaluate(self, ind):
+    def evaluate(self, ind, filename=""):
         """
         Evaluate the fitness value of the Chromosome object
         The fitness value is the final wealth value after the 3-year training data
