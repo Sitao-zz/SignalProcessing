@@ -16,6 +16,8 @@ class GeneticEngine:
 
     def __init__(self, data):
         self._evaluator = Evaluator(data)
+        self._best_ind = None
+        self._best_fit_val = 0
 
         # To assure reproductibility, the RNG seed is set prior to the items
         # dict initialization. It is also seeded in main().
@@ -66,6 +68,8 @@ class GeneticEngine:
         print("\n:::: [genetic] individual", ind, "::::")
         start = dt.now()
         fit_val = self._evaluator.evaluate(ind)
+        if fit_val > self._best_fit_val:
+            self._best_ind = ind
         print(":::: [genetic] Evaluate individual. fitness value", fit_val, "Duration", dt.now() - start, "::::\n")
         return fit_val, None
 
@@ -124,7 +128,12 @@ class GeneticEngine:
         stats.register("std", numpy.std, axis=0)
         stats.register("min", numpy.min, axis=0)
         stats.register("max", numpy.max, axis=0)
-        algorithms.eaMuPlusLambda(pop, self.toolbox, MU, LAMBDA, CXPB, MUTPB, NGEN, stats, halloffame=hof)
+        try:
+            algorithms.eaMuPlusLambda(pop, self.toolbox, MU, LAMBDA, CXPB, MUTPB, NGEN, stats, halloffame=hof)
+        except Exception as err:
+            print(err)
+            return self._best_ind
+
         print("The best individual is :", hof[-1])
         print(len(pop))
         print(len(hof))

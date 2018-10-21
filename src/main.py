@@ -9,15 +9,20 @@ from src.dataProcessing import DataProcessing
 import pandas as pd
 from datetime import datetime as dt
 
+preprocess = False
+
 # Get the best individual and its fitness value
 start = dt.now()
-# data = pd.read_csv('data\TrainDataWithInds_trim.csv')
-df = pd.read_excel("data/FCPO_2011_2013.xlsx", "2011-2013")
-dataprocessing_Daily = DataProcessing_Daily(df)
-data = dataprocessing_Daily.Preprocessing_Daily(df)
+if preprocess:
+    df = pd.read_excel("data/FCPO_2011_2013.xlsx", "2011-2013")
+    dataprocessing_Daily = DataProcessing_Daily(df)
+    data = dataprocessing_Daily.Preprocessing_Daily(df)
 
-# dataprocessing= DataProcessing(df)
-# data=dataprocessing.Preprocessing(df)
+    # dataprocessing= DataProcessing(df)
+    # data=dataprocessing.Preprocessing(df)
+    pass
+else:
+    data = pd.read_csv('data\TrainDataWithInds_trim_1k.csv')
 print("::::: [main] Load data ", dt.now() - start, ":::::")
 
 start = dt.now()
@@ -29,4 +34,5 @@ best_ind = engine.best_ind()
 print("::::: [main] Find the best individual ", dt.now() - start, ":::::")
 
 evaluator = engine.evaluator
-value = evaluator.evaluate(best_ind)
+value = evaluator.evaluate(best_ind, "data/transactions_best.csv")
+print("\n:::: [genetic] best individual", best_ind, "fitness value", value, "::::")

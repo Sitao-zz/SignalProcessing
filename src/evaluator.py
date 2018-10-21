@@ -92,7 +92,7 @@ class Evaluator:
         asset = round(asset, 2)
         return balance, longPos, shortPos, asset
 
-    def evaluate(self, ind):
+    def evaluate(self, ind, filename=""):
         """
         Evaluate the fitness value of the Chromosome object
         The fitness value is the final wealth value after the 3-year training data
@@ -138,6 +138,8 @@ class Evaluator:
             Fortune.append(AssetValue)
 
         self._data['Fortune'] = Fortune
+        if not filename:
+            self._data.to_csv(filename)
         # self._data['Operation'] = 0
         # self._data.Operation[self._data.Signal > 0] = 1
         # self._data.Operation[self._data.Signal < 0] = -1
