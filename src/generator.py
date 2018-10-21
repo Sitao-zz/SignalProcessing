@@ -29,14 +29,34 @@ class Generator:
         # RSI       0
         # MACD      1
         # ADX       2
+
         for name in self.indicators:
             # set up indicator after the cffset columns
-            x = np.arange(0, 101, 1)
+            max=data[name].max()
+            min=data[name].min()
+            mean=data[name].mean()
+            llb=round(min*0.9,2)
+            lrb=round(min+(mean-min)*0.6,2)
+            mlb=round(min+(mean-min)*0.4,2)
+            mid=round(mean,2)
+            mrb=round(mean+(max-mean)*0.8,2)
+            hlb=round(mean+(max-mean)*0.6,2)
+            hrb=round(max*1.1,2)
+            print("Indicator Name : " +name + " max value : "+str(max)
+                  +" min value : " +str(min) + " mean value : "+str(mean))
+            print("low left boundary value : " + str(llb) + " low right boundary value : " + str(lrb) )
+            print ("medium left boundary value : " +str(mlb))
+            print("middle value : " +str(mid))
+            print ("medium right boundary value :" +str(mrb))
+            print ("high left boundary value : " +str(hlb))
+            print ("high right boundary value : " +str(hrb))
+
+            x = np.arange(llb, hrb, 0.01)
             # column starts from the one after the offset
             indicator = ctrl.Antecedent(x, name)
-            indicator['lo'] = fuzz.trimf(x, [0, 0, 30])
-            indicator['me'] = fuzz.trimf(x, [20, 50, 90])
-            indicator['hi'] = fuzz.trimf(x, [80, 100, 100])
+            indicator['lo'] = fuzz.trimf(x, [llb, llb, lrb])
+            indicator['me'] = fuzz.trimf(x, [mlb, mid, mrb])
+            indicator['hi'] = fuzz.trimf(x, [hlb, hrb, hrb])
             self.ind_funcs.append(indicator)
 
         # set up decision
