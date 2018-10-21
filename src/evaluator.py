@@ -5,12 +5,13 @@ import math
 
 BROKERAGE_RATE = 0.2
 BROKERAGE_MIN_FEE = 30
+FIRST_INDICATOR_INDEX = 6
 
 
 class Evaluator:
 
     def __init__(self, data):
-        data_indicator = data.iloc[:, range(9, len(data.columns), 1)]
+        data_indicator = data.iloc[:, range(FIRST_INDICATOR_INDEX, len(data.columns), 1)]
         self._generator = Generator(data_indicator)
         self._data = data
 

@@ -32,24 +32,24 @@ class Generator:
 
         for name in self.indicators:
             # set up indicator after the cffset columns
-            max=data[name].max()
-            min=data[name].min()
-            mean=data[name].mean()
-            llb=round(min*0.9,2)
-            lrb=round(min+(mean-min)*0.6,2)
-            mlb=round(min+(mean-min)*0.4,2)
-            mid=round(mean,2)
-            mrb=round(mean+(max-mean)*0.8,2)
-            hlb=round(mean+(max-mean)*0.6,2)
-            hrb=round(max*1.1,2)
-            print("Indicator Name : " +name + " max value : "+str(max)
-                  +" min value : " +str(min) + " mean value : "+str(mean))
-            print("low left boundary value : " + str(llb) + " low right boundary value : " + str(lrb) )
-            print ("medium left boundary value : " +str(mlb))
-            print("middle value : " +str(mid))
-            print ("medium right boundary value :" +str(mrb))
-            print ("high left boundary value : " +str(hlb))
-            print ("high right boundary value : " +str(hrb))
+            max = data[name].max()
+            min = data[name].min()
+            mean = data[name].mean()
+            llb = round(min * 0.9, 2)
+            lrb = round(min + (mean - min) * 0.6, 2)
+            mlb = round(min + (mean - min) * 0.4, 2)
+            mid = round(mean, 2)
+            mrb = round(mean + (max - mean) * 0.8, 2)
+            hlb = round(mean + (max - mean) * 0.6, 2)
+            hrb = round(max * 1.1, 2)
+            # print("Indicator Name : " +name + " max value : "+str(max)
+            #       +" min value : " +str(min) + " mean value : "+str(mean))
+            # print("low left boundary value : " + str(llb) + " low right boundary value : " + str(lrb) )
+            # print ("medium left boundary value : " +str(mlb))
+            # print("middle value : " +str(mid))
+            # print ("medium right boundary value :" +str(mrb))
+            # print ("high left boundary value : " +str(hlb))
+            # print ("high right boundary value : " +str(hrb))
 
             x = np.arange(llb, hrb, 0.01)
             # column starts from the one after the offset
@@ -100,6 +100,9 @@ class Generator:
         rules = []
         indicators = []
         for i in ind:
+            assert (i < len(self.rules))
+            assert (i // 9 < len(self.indicators))
+
             rules.append(self.rules[i])
             indicator = self.indicators[i // 9]
             if indicator not in indicators:
