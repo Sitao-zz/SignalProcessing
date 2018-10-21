@@ -22,17 +22,19 @@ if preprocess:
     # data=dataprocessing.Preprocessing(df)
     pass
 else:
-    data = pd.read_csv('data\TrainDataWithInds_trim_1k.csv')
-print("::::: [main] Load data ", dt.now() - start, ":::::")
+    data = pd.read_csv('data\TrainDataWithInds_Daily.csv')
+print("::::: [main] Load data", dt.now() - start, ":::::")
 
 start = dt.now()
 engine = GeneticEngine(data)
-print("::::: [main] Initialize GeneticEngine ", dt.now() - start, ":::::")
+print("::::: [main] Initialize GeneticEngine", dt.now() - start, ":::::")
 
 start = dt.now()
 best_ind = engine.best_ind()
-print("::::: [main] Find the best individual ", dt.now() - start, ":::::")
-
-evaluator = engine.evaluator
-value = evaluator.evaluate(best_ind, "data/transactions_best.csv")
-print("\n:::: [genetic] best individual", best_ind, "fitness value", value, "::::")
+if best_ind is None:
+    print("::::: [main] Find the best individual", dt.now() - start, ":::::")
+    evaluator = engine.evaluator
+    value = evaluator.evaluate(best_ind, "data/transactions_best.csv")
+    print("\n:::: [genetic] best individual", best_ind, "fitness value", value, "::::")
+else:
+    print("::::: [main] No individual found with positive fitness value", dt.now() - start, ":::::")
