@@ -6,11 +6,10 @@
 from src.genetic import GeneticEngine
 from src.evaluator import Evaluator
 from src.dataProcessor import DataProcessor
+import src.config as config
 import pandas as pd
 from datetime import datetime as dt
 import os
-
-IS_DAILY = True
 
 
 def load_data_daily():
@@ -101,7 +100,7 @@ def test(data_test, ind, rule_generator):
 
 
 def main():
-    if IS_DAILY:
+    if config.IS_DAILY:
         data_train, data_test = load_data_daily()
     else:
         data_train, data_test = load_data()

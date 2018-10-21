@@ -1,8 +1,8 @@
 import src.fuzzy as fuzzy
+import src.config as config
 from src.generator import Generator
 from datetime import datetime as dt
 import math
-import pandas as pd
 
 BROKERAGE_RATE = 0.2
 BROKERAGE_MIN_FEE = 30
@@ -30,9 +30,27 @@ class Evaluator:
         fee = round(volume * price * BROKERAGE_RATE / 100, 2)
         return fee
 
+    def execute_long(self, data, balance, longPos):
+        buy_price = data['High']  # the price for buy is at High
+        sell_price = data['Low']  # the price for sell is at Low
+        signal = data['Signal']  # the strength of the operation
+
+        if signal > 0:  # signal is buy, money must be enough to buy, otherwise can not buy
+            if balance > 0:
+                buy = round(balance * signal / buy_price)
+                longPos = longPos + buy
+                balance = balance - buy * buy_price - self.calcBrokerage(buy, buy_price)
+        elif signal < 0:  # signal is sell, hold must be enough to sell, otherwise can not sell
+            if longPos > 0:  # data['Signal']<0
+                sell = -longPos * signal
+                longPos = longPos - sell
+                balance = balance + sell * sell_price - self.calcBrokerage(sell, sell_price)
+        asset = longPos * sell_price + balance
+        return balance, longPos, 0, asset
+
     # Execute trade and return Long position, Short Position.
     # Update and return new Short Price if there is short instrument executed.
-    def execute(self, data, balance, longPos, shortPos):
+    def execute_full(self, data, balance, longPos, shortPos):
         assert (balance >= 0)
         assert (longPos * shortPos == 0)  # at least on of longPos and shortPos is 0
 
@@ -136,16 +154,22 @@ class Evaluator:
         fortune_data = []
 
         for i, row in self._data.iterrows():
-            balance, long_pos, short_pos, asset_value = self.execute(row, balance, long_pos,
-                                                                     short_pos)
-            balance_data.append(balance)
-            long_pos_data.append(long_pos)
-            short_pos_data.append(short_pos)
-            fortune_data.append(asset_value)
-            if asset_value <= 0:
-                # stop the evaluation when the asset value becomes 0 or less
-                print("::::: [evaluator] Calculate fitness value", dt.now() - start, ":::::")
-                return None, None, None, fortune_data
+            if config.SHORT_SELL:
+                balance, long_pos, short_pos, asset_value = self.execute_long(row, balance, long_pos)
+                balance_data.append(balance)
+                long_pos_data.append(long_pos)
+                fortune_data.append(asset_value)
+            else:
+                balance, long_pos, short_pos, asset_value = self.execute_full(row, balance, long_pos,
+                                                                              short_pos)
+                balance_data.append(balance)
+                long_pos_data.append(long_pos)
+                short_pos_data.append(short_pos)
+                fortune_data.append(asset_value)
+                if asset_value <= 0:
+                    # stop the evaluation when the asset value becomes 0 or less
+                    print("::::: [evaluator] Calculate fitness value", dt.now() - start, ":::::")
+                    return None, None, None, fortune_data
 
         print("::::: [evaluator] Calculate fitness value", dt.now() - start, ":::::")
         return balance_data, long_pos_data, short_pos_data, fortune_data

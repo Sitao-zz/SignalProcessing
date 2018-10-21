@@ -1,4 +1,5 @@
 from src.evaluator import Evaluator
+import src.config as config
 import random
 import numpy
 
@@ -7,8 +8,6 @@ from deap import creator
 from deap import base
 from deap import algorithms
 from datetime import datetime as dt
-
-IND_INIT_SIZE = 10  # 10 rules
 
 
 class GeneticEngine:
@@ -44,7 +43,7 @@ class GeneticEngine:
         #       define 'individual' to be an individual
         #       consisting of 10 'attr_item' elements ('genes')
         self.toolbox.register("individual", tools.initRepeat, creator.Individual,
-                              self.toolbox.attr_item, IND_INIT_SIZE)
+                              self.toolbox.attr_item, config.IND_INIT_SIZE)
 
         # define the population to be a list of individuals
         self.toolbox.register("population", tools.initRepeat, list, self.toolbox.individual)
@@ -115,13 +114,8 @@ class GeneticEngine:
         :return: the best individual Chromosome
         """
         random.seed(64)
-        NGEN = 50
-        MU = 50
-        LAMBDA = 100
-        CXPB = 0.7
-        MUTPB = 0.05
 
-        pop = self.toolbox.population(n=MU)
+        pop = self.toolbox.population(n=config.MU)
         hof = tools.ParetoFront()
         stats = tools.Statistics(lambda ind: ind.fitness.values)
         stats.register("avg", numpy.mean, axis=0)
@@ -129,7 +123,8 @@ class GeneticEngine:
         stats.register("min", numpy.min, axis=0)
         stats.register("max", numpy.max, axis=0)
         try:
-            algorithms.eaMuPlusLambda(pop, self.toolbox, MU, LAMBDA, CXPB, MUTPB, NGEN, stats, halloffame=hof)
+            algorithms.eaMuPlusLambda(pop, self.toolbox, config.MU, config.LAMBDA, config.CXPB, config.MUTPB,
+                                      config.NGEN, stats, halloffame=hof)
         except ValueError as err:
             print(err)
             return self._best_ind
