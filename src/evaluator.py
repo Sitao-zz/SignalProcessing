@@ -98,6 +98,7 @@ class Evaluator:
         The fitness value is the final wealth value after the 3-year training data
 
         :param ind: individual Chromosome object
+        :param filename: the name of the file where the transactions to be exported to
         :return: the fitness value, i.e. wealth value
         """
         start = dt.now()
@@ -138,12 +139,9 @@ class Evaluator:
             Fortune.append(AssetValue)
 
         self._data['Fortune'] = Fortune
-        if not filename:
+        if filename:
             self._data.to_csv(filename)
-        # self._data['Operation'] = 0
-        # self._data.Operation[self._data.Signal > 0] = 1
-        # self._data.Operation[self._data.Signal < 0] = -1
-        fit_val = self._data.iloc[-1]['Fortune']
 
+        fit_val = self._data.iloc[-1]['Fortune']
         print("::::: [evaluator] Calculate fitness value", dt.now() - start, ":::::")
         return fit_val
