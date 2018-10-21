@@ -19,7 +19,7 @@ class GeneticEngine:
         self._best_ind = None
         self._best_fit_val = 0
 
-        # To assure reproductibility, the RNG seed is set prior to the items
+        # To assure reproducibility, the RNG seed is set prior to the items
         # dict initialization. It is also seeded in main().
         random.seed(64)
 
