@@ -14,6 +14,10 @@ class Generator:
         self.fuzzify(data)
         self.init_rules()
 
+    @property
+    def rule_set_len(self):
+        return len(self.rules)
+
     def fuzzify(self, data):
         """
         This method performs the fuzzification:

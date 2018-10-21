@@ -9,13 +9,15 @@ from deap import algorithms
 from datetime import datetime as dt
 
 IND_INIT_SIZE = 10  # 基因编码位数 10 rules
-NBR_ITEMS = 135
 
 
 class GeneticEngine:
 
     def __init__(self, data):
         self._evaluator = Evaluator(data)
+        self._item_count = self._evaluator.generator.rule_set_len
+        self._best_ind = None
+        self._best_fit_val = 0
 
         # To assure reproductibility, the RNG seed is set prior to the items
         # dict initialization. It is also seeded in main().
@@ -36,7 +38,7 @@ class GeneticEngine:
         #       define 'attr_item' to be an attribute ('gene')
         #       which corresponds to integers sampled uniformly
         #       from the range [1,10] (i.e. 1 to 10 with equal probability)
-        self.toolbox.register("attr_item", random.randrange, NBR_ITEMS)
+        self.toolbox.register("attr_item", random.randrange, self._item_count)
 
         # Structure initializers
         #       define 'individual' to be an individual
@@ -66,6 +68,8 @@ class GeneticEngine:
         print("\n:::: [genetic] individual", ind, "::::")
         start = dt.now()
         fit_val = self._evaluator.evaluate(ind)
+        if fit_val > self._best_fit_val:
+            self._best_ind = ind
         print(":::: [genetic] Evaluate individual. fitness value", fit_val, "Duration", dt.now() - start, "::::\n")
         return fit_val, None
 
@@ -80,7 +84,7 @@ class GeneticEngine:
             if len(ind) > 0:  # We cannot pop from an empty set
                 ind.remove(random.choice(sorted(tuple(ind))))
         else:
-            ind.add(random.randrange(NBR_ITEMS))
+            ind.add(random.randrange(self._item_count))
         return ind
 
     def cx_ind(self, ind1, ind2, chance_crossover=0.7):
@@ -124,7 +128,12 @@ class GeneticEngine:
         stats.register("std", numpy.std, axis=0)
         stats.register("min", numpy.min, axis=0)
         stats.register("max", numpy.max, axis=0)
-        algorithms.eaMuPlusLambda(pop, self.toolbox, MU, LAMBDA, CXPB, MUTPB, NGEN, stats, halloffame=hof)
+        try:
+            algorithms.eaMuPlusLambda(pop, self.toolbox, MU, LAMBDA, CXPB, MUTPB, NGEN, stats, halloffame=hof)
+        except Exception as err:
+            print(err)
+            return self._best_ind
+
         print("The best individual is :", hof[-1])
         print(len(pop))
         print(len(hof))
